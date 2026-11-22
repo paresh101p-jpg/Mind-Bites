@@ -16,7 +16,7 @@ import shutil
 import requests
 from datetime import datetime
 
-from caption_engine import generate_mind_bites_caption
+from caption_engine import generate_image_aware_caption
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 POOL_FILE = os.path.join(BASE_DIR, "mind_bites_pool.json")
@@ -181,7 +181,7 @@ def run_pipeline():
     print(f"\n--- Publishing Mind Bites Note: {title} (Cycle {cycle_number}) ---")
     print(f"Image URL: {image_url}")
 
-    caption = generate_mind_bites_caption(title)
+    caption = generate_image_aware_caption(item.get("image_name", ""), title)
 
     # 1. Post to Instagram
     ig_post_id = post_to_instagram(image_url, caption)
