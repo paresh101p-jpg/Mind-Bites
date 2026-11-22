@@ -48,7 +48,8 @@
       "#Cardiology",
       "#ScienceInHindi"
     ],
-    "asset": "06_heart.png"
+    "asset": "06_heart.png",
+    "query": "Human_heart"
   },
   {
     "id": "why_ocean_salty",
@@ -98,7 +99,8 @@
       "#SeaLife",
       "#NatureWonders",
       "#ScienceInHindi"
-    ]
+    ],
+    "query": "Ocean"
   },
   {
     "id": "deja_vu_psychology",
@@ -149,7 +151,8 @@
       "#MindTricks",
       "#ScienceFacts"
     ],
-    "asset": "04_brain.png"
+    "asset": "04_brain.png",
+    "query": "Brain"
   },
   {
     "id": "how_gps_works",
@@ -199,7 +202,8 @@
       "#TechEducation",
       "#PhysicsFacts",
       "#ScienceInHindi"
-    ]
+    ],
+    "query": "GPS"
   },
   {
     "id": "why_goosebumps",
@@ -249,7 +253,8 @@
       "#BodySecrets",
       "#ScienceFacts",
       "#ScienceInHindi"
-    ]
+    ],
+    "query": "Goose_bumps"
   },
   {
     "id": "how_touchscreen_works",
@@ -299,7 +304,8 @@
       "#Electronics",
       "#TechFacts",
       "#ScienceInHindi"
-    ]
+    ],
+    "query": "Touchscreen"
   },
   {
     "id": "why_we_dream",
@@ -350,7 +356,8 @@
       "#HumanMind",
       "#ScienceInHindi"
     ],
-    "asset": "04_brain.png"
+    "asset": "04_brain.png",
+    "query": "Dream"
   },
   {
     "id": "how_airplane_flies",
@@ -400,6 +407,7 @@
       "#Engineering",
       "#Airplanes",
       "#ScienceFacts"
-    ]
+    ],
+    "query": "Airplane"
   }
 ]

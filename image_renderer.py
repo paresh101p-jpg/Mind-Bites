@@ -329,7 +329,27 @@ def draw_marker_pen(canvas, x0, y0, length=200, angle=25, cap_color=(37, 99, 235
 
 # ==================== DYNAMIC MULTI-SHAPE CARDS ====================
 
-def draw_polaroid_card(img, box, asset_path, caption="", pin_color=None, tape=False, is_dark=False):
+def fetch_dynamic_topic_visual(query):
+    """Fetches official high-res scientific visual from Wikimedia Commons / Wikipedia API in memory."""
+    try:
+        import urllib.request, io, json
+        q = query.replace(" ", "_")
+        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{q}"
+        req = urllib.request.Request(url, headers={"User-Agent": "MindBitesBot/1.0 (info@mindbites.org)"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode())
+            img_info = data.get("originalimage") or data.get("thumbnail")
+            if img_info and "source" in img_info:
+                img_url = img_info["source"]
+                img_req = urllib.request.Request(img_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(img_req, timeout=10) as img_resp:
+                    img_data = img_resp.read()
+                    return Image.open(io.BytesIO(img_data)).convert("RGB")
+    except Exception as e:
+        print(f"Dynamic visual fetch error for {query}: {e}")
+    return None
+
+def draw_polaroid_card(img, box, asset_path, caption="", pin_color=None, tape=False, is_dark=False, topic_query=""):
     x0, y0, x1, y1 = box
     pw = x1 - x0
     ph = y1 - y0
@@ -348,8 +368,18 @@ def draw_polaroid_card(img, box, asset_path, caption="", pin_color=None, tape=Fa
     photo_w = pw - (margin * 2)
     photo_h = ph - margin - bottom_space
 
+    photo = None
     if asset_path and os.path.isfile(asset_path):
-        photo = Image.open(asset_path).convert("RGB")
+        try:
+            photo = Image.open(asset_path).convert("RGB")
+        except Exception:
+            photo = None
+
+    if photo is None and topic_query:
+        print(f"Fetching dynamic online visual for: '{topic_query}'...")
+        photo = fetch_dynamic_topic_visual(topic_query)
+
+    if photo is not None:
         photo = photo.resize((photo_w, photo_h), Image.Resampling.LANCZOS)
         card_img.paste(photo, (margin, margin))
         cdraw.rectangle([margin, margin, margin + photo_w, margin + photo_h], outline=(0, 0, 0, 60), width=1)
@@ -780,7 +810,8 @@ def render_sheet(topic, theme_name, asset_filename, output_path):
     pin_col = (239, 68, 68) if theme_name == "corkboard" else None
     tape_flag = theme_name in ["grid_journal", "postit_wall", "legal_pad"]
     caption = "★ वास्तविक वैज्ञानिक चित्रण (Official Scientific Visual)"
-    draw_polaroid_card(img, hero_box, asset_path, caption=caption, pin_color=pin_col, tape=tape_flag, is_dark=is_dark)
+    t_query = topic.get("query") or topic.get("category", "") or topic.get("id", "")
+    draw_polaroid_card(img, hero_box, asset_path, caption=caption, pin_color=pin_col, tape=tape_flag, is_dark=is_dark, topic_query=t_query)
 
     # 3. 4 Large, Spacious Cards (2 x 2 Grid)
     grid_y_start = hero_y + 295
