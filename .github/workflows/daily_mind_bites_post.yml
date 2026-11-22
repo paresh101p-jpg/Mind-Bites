@@ -1,4 +1,4 @@
-name: Daily Mind Bites 2X Auto Post
+name: Daily Mind Bites 2X Dynamic Auto Post
 
 on:
   schedule:
@@ -12,8 +12,8 @@ permissions:
   contents: write
 
 jobs:
-  publish_mind_bites:
-    runs-on: ubuntu-latest
+  publish_dynamic_mind_bites:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout Repository
@@ -28,9 +28,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install requests
+          pip install requests Pillow numpy
 
-      - name: Run Mind Bites Publisher
+      - name: Run Dynamic Mind Bites Publisher
         env:
           FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
@@ -39,9 +39,10 @@ jobs:
           python auto_mind_bites_publisher.py
 
       - name: Commit and Push State Updates
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add mind_bites_pool.json daily_post_tracker.json
-          git commit -m "Auto-post Mind Bites visual note [skip ci]" || echo "No changes to commit"
+          git add used_topics.json daily_post_tracker.json
+          git commit -m "Auto-post fresh trending Mind Bites note [skip ci]" || echo "No changes to commit"
           git push origin main

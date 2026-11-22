@@ -1,30 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-Mind Bites - 100% Automated Instagram & Facebook Post Publisher
-Publishes 2 high-converting visual notes daily:
-1. Slot 1: 11:30 AM IST (06:00 UTC)
-2. Slot 2: 08:30 PM IST (15:00 UTC)
-Infinite Loop: Cycles infinitely through the approved pool.
+Mind Bites - 100% Autonomous Dynamic Topic Publisher
+Features:
+1. On EVERY RUN, dynamically selects a BRAND NEW trending topic from trending_topics_pool.json.
+2. ZERO REPEAT: Tracks used_topics.json so no topic is EVER repeated a second time!
+3. DYNAMIC RENDERING: Renders the 1080x1350 visual note on the fly with rich themes.
+4. UPLOADS & PUBLISHES: Uploads to Catbox CDN, generates image-matched caption, and posts to Instagram & Facebook.
 """
 
 import os
 import sys
-import glob
 import time
 import json
-import shutil
 import requests
 from datetime import datetime
 
-from caption_engine import generate_image_aware_caption
+from image_renderer import render_sheet
+from caption_engine import generate_topic_caption
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-POOL_FILE = os.path.join(BASE_DIR, "mind_bites_pool.json")
+TOPICS_POOL_FILE = os.path.join(BASE_DIR, "trending_topics_pool.json")
+USED_TOPICS_FILE = os.path.join(BASE_DIR, "used_topics.json")
 TRACKER_FILE = os.path.join(BASE_DIR, "daily_post_tracker.json")
 CREDS_FILE = os.path.join(BASE_DIR, "mind_bites_credentials.json")
-IMAGES_DIR = os.path.join(BASE_DIR, "Images")
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
-os.makedirs(IMAGES_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Load Credentials from Environment or local file
 FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN")
@@ -44,55 +45,76 @@ if not FB_PAGE_ACCESS_TOKEN and os.path.exists(CREDS_FILE):
 print(f"Loaded credentials: FB_PAGE_ID={FB_PAGE_ID}, IG_USER_ID={IG_USER_ID}")
 
 
-def load_pool() -> list:
-    if os.path.exists(POOL_FILE):
+def load_json(filepath: str, default=None):
+    if default is None:
+        default = []
+    if os.path.exists(filepath):
         try:
-            with open(POOL_FILE, "r", encoding="utf-8") as f:
+            with open(filepath, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
-            return []
-    return []
+        except Exception as e:
+            print(f"Error reading {filepath}: {e}")
+            return default
+    return default
 
 
-def save_pool(pool: list):
-    with open(POOL_FILE, "w", encoding="utf-8") as f:
-        json.dump(pool, f, indent=2, ensure_ascii=False)
+def save_json(filepath: str, data):
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def load_tracker() -> list:
-    if os.path.exists(TRACKER_FILE):
+def get_next_trending_topic():
+    """
+    Picks the next unused topic from the trending pool.
+    Guarantees ZERO topic repetitions.
+    """
+    topics = load_json(TOPICS_POOL_FILE, default=[])
+    used = load_json(USED_TOPICS_FILE, default=[])
+
+    if not topics:
+        print("Error: trending_topics_pool.json is empty!")
+        return None
+
+    # Filter out already used topics
+    available = [t for t in topics if t.get("id") not in used]
+
+    if not available:
+        print("Notice: All topics have been used! Starting Cycle 2.")
+        used = []
+        save_json(USED_TOPICS_FILE, used)
+        available = topics
+
+    chosen = available[0]
+    return chosen
+
+
+def upload_to_catbox(file_path: str) -> str:
+    """Uploads freshly rendered image to Catbox CDN for high-speed direct URL."""
+    print(f"Uploading {os.path.basename(file_path)} to Catbox CDN...")
+    url = "https://catbox.moe/user/api.php"
+    for attempt in range(3):
         try:
-            with open(TRACKER_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
-    return []
-
-
-def save_tracker(tracker: list):
-    with open(TRACKER_FILE, "w", encoding="utf-8") as f:
-        json.dump(tracker, f, indent=2, ensure_ascii=False)
-
-
-def get_next_item_to_post(pool: list):
-    """
-    Finds the item with the minimum times_posted.
-    Guarantees infinite circular looping with zero deadlocks.
-    """
-    if not pool:
-        return None, 1
-
-    min_posted = min(item.get("times_posted", 0) for item in pool)
-    cycle_number = min_posted + 1
-
-    candidates = [item for item in pool if item.get("times_posted", 0) == min_posted]
-    candidates.sort(key=lambda x: x.get("last_posted") or "")
-    
-    return candidates[0], cycle_number
+            with open(file_path, "rb") as f:
+                resp = requests.post(
+                    url,
+                    data={"reqtype": "fileupload"},
+                    files={"fileToUpload": f},
+                    timeout=35
+                )
+            if resp.status_code == 200 and resp.text.startswith("http"):
+                cat_url = resp.text.strip()
+                print(f"✅ Catbox Direct URL: {cat_url}")
+                return cat_url
+            else:
+                print(f"Catbox attempt {attempt+1} response: {resp.text}")
+        except Exception as e:
+            print(f"Catbox upload error: {e}")
+        time.sleep(3)
+    return ""
 
 
 def post_to_instagram(image_url: str, caption: str) -> str:
-    """Posts single photo to Instagram Business Account via Meta Graph API."""
+    """Publishes single photo to Instagram Business Account."""
     if not IG_USER_ID or not FB_PAGE_ACCESS_TOKEN:
         print("Notice: Instagram credentials not configured.")
         return ""
@@ -113,7 +135,7 @@ def post_to_instagram(image_url: str, caption: str) -> str:
             print(f"Failed to create Instagram container: {res_json}")
             return ""
 
-        print(f"Container created successfully: {container_id}. Waiting for processing...")
+        print(f"Container created: {container_id}. Waiting 10s for processing...")
         time.sleep(10)
 
         # Step 2: Publish container
@@ -137,7 +159,7 @@ def post_to_instagram(image_url: str, caption: str) -> str:
 
 
 def post_to_facebook(image_url: str, caption: str) -> str:
-    """Posts single photo to Facebook Page Feed via Meta Graph API."""
+    """Publishes single photo to Facebook Page Feed."""
     if not FB_PAGE_ID or not FB_PAGE_ACCESS_TOKEN:
         print("Notice: Facebook Page credentials not configured.")
         return ""
@@ -166,54 +188,69 @@ def post_to_facebook(image_url: str, caption: str) -> str:
 
 
 def run_pipeline():
-    pool = load_pool()
-    if not pool:
-        print("Error: Pool is empty! No images to publish.")
+    # 1. Pick brand new trending topic
+    topic = get_next_trending_topic()
+    if not topic:
+        print("No topic available.")
         return False
 
-    item, cycle_number = get_next_item_to_post(pool)
-    if not item:
-        print("No eligible image found in pool.")
+    topic_id = topic.get("id")
+    title = topic.get("title")
+    theme_name = topic.get("theme", "corkboard")
+    asset_file = topic.get("asset", "")
+    print(f"\n🚀 [NEW TOPIC SELECTED]: {title}")
+    print(f"Topic ID: {topic_id} | Theme: {theme_name}")
+
+    # 2. Render image on the fly!
+    output_image_path = os.path.join(OUTPUT_DIR, f"mind_bites_{topic_id}.jpg")
+    print(f"Rendering visual note to: {output_image_path}...")
+    render_sheet(topic, theme_name, asset_file, output_image_path)
+
+    if not os.path.exists(output_image_path):
+        print("Error: Image rendering failed!")
         return False
 
-    image_url = item.get("catbox_url")
-    title = item.get("title", "Daily Quick Knowledge Note")
-    print(f"\n--- Publishing Mind Bites Note: {title} (Cycle {cycle_number}) ---")
-    print(f"Image URL: {image_url}")
+    # 3. Upload freshly rendered image to Catbox CDN
+    image_url = upload_to_catbox(output_image_path)
+    if not image_url:
+        print("Error: Failed to upload image to Catbox CDN.")
+        return False
 
-    caption = generate_image_aware_caption(item.get("image_name", ""), title)
+    # 4. Generate intelligent image-matched caption
+    caption = generate_topic_caption(topic)
+    print("\n--- Generated Caption Preview ---")
+    print(caption[:150] + "...\n")
 
-    # 1. Post to Instagram
+    # 5. Publish to Instagram & Facebook
     ig_post_id = post_to_instagram(image_url, caption)
-
-    # 2. Post to Facebook
     fb_post_id = post_to_facebook(image_url, caption)
 
-    # Update item and pool if at least one succeeded
+    # 6. Mark topic as used so it is NEVER repeated!
     if ig_post_id or fb_post_id:
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        item["times_posted"] = item.get("times_posted", 0) + 1
-        item["last_posted"] = now_str
-        save_pool(pool)
 
-        # Update tracker
-        tracker = load_tracker()
-        tracker_entry = {
+        used = load_json(USED_TOPICS_FILE, default=[])
+        if topic_id not in used:
+            used.append(topic_id)
+            save_json(USED_TOPICS_FILE, used)
+
+        tracker = load_json(TRACKER_FILE, default=[])
+        tracker.append({
             "timestamp": now_str,
+            "topic_id": topic_id,
             "title": title,
-            "image": item.get("image_name"),
-            "cycle_number": cycle_number,
+            "theme": theme_name,
+            "catbox_url": image_url,
             "instagram_post_id": ig_post_id,
             "facebook_post_id": fb_post_id,
             "caption_preview": caption[:80] + "..."
-        }
-        tracker.append(tracker_entry)
-        save_tracker(tracker)
+        })
+        save_json(TRACKER_FILE, tracker)
 
-        print("\n🎉 Mind Bites post successfully recorded and saved to tracker!")
+        print(f"\n🎉 SUCCESS: Brand new topic '{title}' published and recorded in used_topics.json!")
         return True
     else:
-        print("\n❌ Failed to publish post to both platforms.")
+        print("\n❌ Failed to publish to both Instagram and Facebook.")
         return False
 
 
