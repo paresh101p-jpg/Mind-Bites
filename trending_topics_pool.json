@@ -40,7 +40,15 @@
       }
     ],
     "fun_fact": "इंसानी दिल इतना दबाव बना सकता है कि खून को 30 फीट ऊपर हवा में उछाल दे!",
-    "tags": ["#HumanHeart", "#BiologyFacts", "#HealthWisdom", "#HumanBody", "#Cardiology", "#ScienceInHindi"]
+    "tags": [
+      "#HumanHeart",
+      "#BiologyFacts",
+      "#HealthWisdom",
+      "#HumanBody",
+      "#Cardiology",
+      "#ScienceInHindi"
+    ],
+    "asset": "06_heart.png"
   },
   {
     "id": "why_ocean_salty",
@@ -83,7 +91,14 @@
       }
     ],
     "fun_fact": "मृत सागर (Dead Sea) इतना खारा है कि उसमें कोई भी इंसान बिना तैरे पानी की सतह पर तैरता रहता है!",
-    "tags": ["#OceanFacts", "#EarthScience", "#Geology", "#SeaLife", "#NatureWonders", "#ScienceInHindi"]
+    "tags": [
+      "#OceanFacts",
+      "#EarthScience",
+      "#Geology",
+      "#SeaLife",
+      "#NatureWonders",
+      "#ScienceInHindi"
+    ]
   },
   {
     "id": "deja_vu_psychology",
@@ -126,7 +141,15 @@
       }
     ],
     "fun_fact": "डेजा वू का उल्टा 'Jamais Vu' होता है, जहाँ अपनी ही जानी-पहचानी जगह अचानक पूरी तरह अजनबी लगने लगती है!",
-    "tags": ["#DejaVu", "#BrainFacts", "#PsychologyInHindi", "#Neuroscience", "#MindTricks", "#ScienceFacts"]
+    "tags": [
+      "#DejaVu",
+      "#BrainFacts",
+      "#PsychologyInHindi",
+      "#Neuroscience",
+      "#MindTricks",
+      "#ScienceFacts"
+    ],
+    "asset": "04_brain.png"
   },
   {
     "id": "how_gps_works",
@@ -169,7 +192,14 @@
       }
     ],
     "fun_fact": "अगर आइंस्टीन की रिलेटिविटी थ्योरी का सुधार न किया जाए, तो GPS हर दिन 11 किलोमीटर की गलत लोकेशन बताने लगेगा!",
-    "tags": ["#GPS", "#SpaceTech", "#EngineeringFacts", "#TechEducation", "#PhysicsFacts", "#ScienceInHindi"]
+    "tags": [
+      "#GPS",
+      "#SpaceTech",
+      "#EngineeringFacts",
+      "#TechEducation",
+      "#PhysicsFacts",
+      "#ScienceInHindi"
+    ]
   },
   {
     "id": "why_goosebumps",
@@ -212,7 +242,14 @@
       }
     ],
     "fun_fact": "शानदार संगीत सुनकर रोंगटे खड़े होने की क्रिया को वैज्ञानिक भाषा में 'Frisson' या 'Skin Orgasm' कहा जाता है!",
-    "tags": ["#Goosebumps", "#EvolutionaryBiology", "#HumanAnatomy", "#BodySecrets", "#ScienceFacts", "#ScienceInHindi"]
+    "tags": [
+      "#Goosebumps",
+      "#EvolutionaryBiology",
+      "#HumanAnatomy",
+      "#BodySecrets",
+      "#ScienceFacts",
+      "#ScienceInHindi"
+    ]
   },
   {
     "id": "how_touchscreen_works",
@@ -255,7 +292,14 @@
       }
     ],
     "fun_fact": "एक सामान्य गीले आलू या केले से भी आप अपने स्मार्टफोन की टचस्क्रीन को चला सकते हैं क्योंकि वे भी कंडक्टर हैं!",
-    "tags": ["#Touchscreen", "#SmartphoneTech", "#HowThingsWork", "#Electronics", "#TechFacts", "#ScienceInHindi"]
+    "tags": [
+      "#Touchscreen",
+      "#SmartphoneTech",
+      "#HowThingsWork",
+      "#Electronics",
+      "#TechFacts",
+      "#ScienceInHindi"
+    ]
   },
   {
     "id": "why_we_dream",
@@ -298,7 +342,15 @@
       }
     ],
     "fun_fact": "जो लोग जन्म से नेत्रहीन होते हैं, उनके सपनों में दृश्य नहीं बल्कि आवाजें, गंध और छूने के अहसास होते हैं!",
-    "tags": ["#Dreams", "#SleepScience", "#PsychologyFacts", "#BrainPower", "#HumanMind", "#ScienceInHindi"]
+    "tags": [
+      "#Dreams",
+      "#SleepScience",
+      "#PsychologyFacts",
+      "#BrainPower",
+      "#HumanMind",
+      "#ScienceInHindi"
+    ],
+    "asset": "04_brain.png"
   },
   {
     "id": "how_airplane_flies",
@@ -341,6 +393,13 @@
       }
     ],
     "fun_fact": "एक बोइंग 747 का एक पंख अपने ऊपर लगभग 250 टन का वजन उठाने की क्षमता रखता है!",
-    "tags": ["#Aerodynamics", "#AviationFacts", "#PhysicsInHindi", "#Engineering", "#Airplanes", "#ScienceFacts"]
+    "tags": [
+      "#Aerodynamics",
+      "#AviationFacts",
+      "#PhysicsInHindi",
+      "#Engineering",
+      "#Airplanes",
+      "#ScienceFacts"
+    ]
   }
 ]
