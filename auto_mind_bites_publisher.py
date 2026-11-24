@@ -15,6 +15,12 @@ import json
 import requests
 from datetime import datetime
 
+# Guarantee UTF-8 output encoding on Windows consoles and GitHub Actions runners
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from image_renderer import render_sheet
 from caption_engine import generate_topic_caption
 

@@ -21,9 +21,16 @@ Next-Generation Study Notes Generator with:
 """
 
 import os
+import sys
 import math
 import random
 import ctypes
+
+# Guarantee UTF-8 output encoding on Windows consoles and GitHub Actions runners
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from ctypes import wintypes
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
