@@ -95,27 +95,75 @@ def get_next_trending_topic():
 
 
 def upload_to_catbox(file_path: str) -> str:
-    """Uploads freshly rendered image to Catbox CDN for high-speed direct URL."""
-    print(f"Uploading {os.path.basename(file_path)} to Catbox CDN...")
-    url = "https://catbox.moe/user/api.php"
-    for attempt in range(3):
+    """
+    Robust Multi-Tier Image CDN Uploader:
+    Tier 1: Catbox.moe with browser headers
+    Tier 2: FreeImage.host API (Guaranteed no-block on GitHub Actions / Azure datacenter IPs)
+    Tier 3: TmpFiles.org direct download CDN (/dl/)
+    """
+    filename = os.path.basename(file_path)
+    print(f"Uploading {filename} to Image CDN...")
+
+    # Tier 1: Try Catbox.moe with browser user-agent
+    for attempt in range(2):
         try:
+            url = "https://catbox.moe/user/api.php"
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
             with open(file_path, "rb") as f:
                 resp = requests.post(
                     url,
                     data={"reqtype": "fileupload"},
                     files={"fileToUpload": f},
-                    timeout=35
+                    headers=headers,
+                    timeout=30
                 )
             if resp.status_code == 200 and resp.text.startswith("http"):
                 cat_url = resp.text.strip()
                 print(f"✅ Catbox Direct URL: {cat_url}")
                 return cat_url
             else:
-                print(f"Catbox attempt {attempt+1} response: {resp.text}")
+                print(f"   [Catbox Notice] Attempt {attempt+1} response: {resp.text.strip()}")
         except Exception as e:
-            print(f"Catbox upload error: {e}")
-        time.sleep(3)
+            print(f"   [Catbox Notice] Attempt {attempt+1} exception: {e}")
+        time.sleep(2)
+
+    print("   [Notice] Catbox unavailable. Switching to Tier 2 (FreeImage.host)...")
+
+    # Tier 2: FreeImage.host API (High reliability on CI/CD runner IPs)
+    try:
+        with open(file_path, "rb") as f:
+            resp2 = requests.post(
+                "https://freeimage.host/api/1/upload",
+                data={"key": "6d207e02198a847aa98d0a2a901485a5", "action": "upload", "format": "json"},
+                files={"source": f},
+                timeout=30
+            )
+        if resp2.status_code == 200:
+            data = resp2.json()
+            fi_url = data.get("image", {}).get("url")
+            if fi_url and fi_url.startswith("http"):
+                print(f"✅ FreeImage Direct URL: {fi_url}")
+                return fi_url
+        print(f"   [FreeImage Notice] Response: {resp2.text[:120]}")
+    except Exception as e:
+        print(f"   [FreeImage Notice] Exception: {e}")
+
+    print("   [Notice] FreeImage unavailable. Switching to Tier 3 (TmpFiles CDN)...")
+
+    # Tier 3: TmpFiles.org direct download CDN (/dl/)
+    try:
+        with open(file_path, "rb") as f:
+            resp3 = requests.post("https://tmpfiles.org/api/v1/upload", files={"file": f}, timeout=30)
+        if resp3.status_code == 200:
+            data = resp3.json()
+            raw_url = data.get("data", {}).get("url", "")
+            if raw_url:
+                direct_url = raw_url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
+                print(f"✅ TmpFiles Direct URL: {direct_url}")
+                return direct_url
+    except Exception as e:
+        print(f"   [TmpFiles Notice] Exception: {e}")
+
     return ""
 
 
